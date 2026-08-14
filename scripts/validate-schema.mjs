@@ -29,6 +29,16 @@ const SUPABASE_STUBS = /* sql */ `
   create schema if not exists auth;
   create schema if not exists storage;
 
+  -- Mirror Supabase's real layout: pgcrypto lives in \`extensions\`, NOT in
+  -- \`public\`. This matters. A security-definer function pinned to
+  -- \`set search_path = public\` cannot see gen_random_bytes() here, exactly as
+  -- on a real project — which is how "Database error creating new user" got
+  -- shipped once already. Installing it here first makes the migrations'
+  -- \`create extension if not exists pgcrypto\` a no-op, preserving the trap.
+  create schema if not exists extensions;
+  create extension if not exists pgcrypto with schema extensions;
+  set search_path = public, extensions;
+
   create table if not exists auth.users (
     id uuid primary key default gen_random_uuid(),
     email text,
