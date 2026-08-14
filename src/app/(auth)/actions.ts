@@ -65,6 +65,18 @@ function translateAuthError(message: string): string {
   if (m.includes('password should be at least')) {
     return 'Ton mot de passe est trop court.'
   }
+  // Hit while testing the reset flow. Without this the student is told
+  // "an error occurred" and has no idea their new password was simply the
+  // same as the old one.
+  if (m.includes('should be different from the old password')) {
+    return "Choisis un mot de passe différent de l'ancien."
+  }
+  if (m.includes('weak password') || m.includes('password is too weak')) {
+    return 'Ce mot de passe est trop simple. Ajoute des chiffres ou des majuscules.'
+  }
+  if (m.includes('same password')) {
+    return "Choisis un mot de passe différent de l'ancien."
+  }
   if (m.includes('rate limit') || m.includes('too many requests')) {
     return 'Trop de tentatives. Patiente quelques minutes puis réessaie.'
   }
