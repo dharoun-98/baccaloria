@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 /** Routes that require a signed-in user. */
 const PROTECTED_PREFIXES = [
+  '/bienvenue',
   '/accueil',
   '/matieres',
   '/quiz',
