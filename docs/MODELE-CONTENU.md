@@ -44,11 +44,21 @@ Markdown plutôt qu'un format d'éditeur riche, pour trois raisons :
 
 ### LaTeX
 
-- En ligne : `$z = a + ib$`
-- En bloc (centré) : `$$\left| z \right| = \sqrt{a^2 + b^2}$$`
+- En ligne : `$z = a + ib$` — petit, dans le fil du texte
+- En bloc : `$$|z| = \sqrt{a^2 + b^2}$$` — grand, centré, sur sa propre ligne
 
-Les formules longues défilent horizontalement dans leur propre bloc, elles
-n'élargissent jamais la page — important sur téléphone.
+**Tu n'as pas à te soucier du placement des `$$`.** Écris-les comme tu veux :
+sur une ligne, sur plusieurs, collés au texte. L'application normalise avant le
+rendu.
+
+C'est délibéré. La bibliothèque de rendu exige que les `$$` soient seuls sur
+leur ligne, sinon elle échoue **en silence** — soit le LaTeX brut s'affiche tel
+quel, soit la formule est rendue en petit au milieu du paragraphe au lieu d'être
+centrée. Deux erreurs invisibles à la relecture rapide. Le pré-traitement
+supprime le problème plutôt que d'imposer une règle que personne ne retiendra.
+
+Les formules trop larges défilent horizontalement dans leur propre bloc, elles
+n'élargissent jamais la page — indispensable sur téléphone.
 
 ---
 

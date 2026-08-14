@@ -8,6 +8,33 @@ import remarkMath from 'remark-math'
 import { cn } from '@/lib/utils'
 
 /**
+ * Puts every display-math delimiter on its own line.
+ *
+ * remark-math only produces a *block* math node when `$$` sits alone on a line.
+ * Written any other way it degrades silently, in two different ways:
+ *
+ *   $$a = b \qquad        →  raw LaTeX printed as text; the formula is
+ *   c = d$$                  simply wrong on screen, with no error anywhere
+ *
+ *   $$a = b$$             →  parsed as *inline* math: small, left-aligned,
+ *                            not the centred display formula intended
+ *
+ * Both are silent, and neither is obvious when skim-checking a page. Lessons
+ * are written by teachers and drafted by a model, so normalising here is far
+ * more reliable than a formatting rule nobody will remember.
+ *
+ * `$$` unambiguously means display math, so splitting the surrounding paragraph
+ * is the correct result even mid-sentence. Inline maths uses single `$`, which
+ * this deliberately does not touch.
+ */
+function normalizeDisplayMath(markdown: string): string {
+  return markdown.replace(
+    /\$\$([\s\S]*?)\$\$/g,
+    (_match, inner: string) => `\n\n$$\n${inner.trim()}\n$$\n\n`,
+  )
+}
+
+/**
  * Renders a lesson block's Markdown + LaTeX.
  *
  * Content is author-supplied and passes through the editorial review workflow,
@@ -72,7 +99,7 @@ export function RichText({
           ),
         }}
       >
-        {markdown}
+        {normalizeDisplayMath(markdown)}
       </Markdown>
     </div>
   )
