@@ -19,6 +19,8 @@ dist/
 .env.production
 
 # supabase
+# Derived: regenerate with `pnpm db:bundle`. migrations/ is the source of truth.
+supabase/_bundle.generated.sql
 supabase/.temp/
 supabase/.branches/
 .branches/
