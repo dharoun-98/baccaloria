@@ -37,7 +37,10 @@ export function QuizRunner({
   const [graded, setGraded] = useState<GradedPayload | null>(null)
 
   // Per-question timing, used to surface "you rushed this one" later.
-  const questionOpenedAt = useRef<number>(Date.now())
+  // Seeded at 0 rather than Date.now(): reading the clock during render is
+  // impure and unstable across re-renders. begin() stamps it when the quiz
+  // actually starts, which is the only moment the value means anything.
+  const questionOpenedAt = useRef<number>(0)
   const seconds = useRef<Record<string, number>>({})
 
   const begin = useCallback(async () => {
