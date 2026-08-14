@@ -1,4 +1,4 @@
-import { Award, Flame, LogOut, Target, TrendingUp, Zap } from 'lucide-react'
+import { Award, Flame, LogOut, Shield, Target, TrendingUp, Zap } from 'lucide-react'
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
@@ -10,6 +10,20 @@ import { createClient } from '@/lib/supabase/server'
 import { bandFromScore, cn, initials, type ReadinessBand } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Mon profil' }
+
+const ROLE_LABEL: Record<string, string> = {
+  student: 'Élève',
+  teacher: 'Enseignant',
+  editor: 'Éditeur',
+  admin: 'Administrateur',
+}
+
+const ROLE_STYLE: Record<string, string> = {
+  student: 'bg-surface-sunken text-foreground-muted',
+  teacher: 'bg-info/12 text-info',
+  editor: 'bg-info/12 text-info',
+  admin: 'bg-accent-100 text-accent-700 dark:bg-accent-900/40 dark:text-accent-300',
+}
 
 type SubjectScore = {
   filiere_subject_id: string
@@ -31,7 +45,7 @@ export default async function ProfilePage() {
     await Promise.all([
       supabase
         .from('profiles')
-        .select('full_name, xp, streak_days, longest_streak, school, city')
+        .select('full_name, xp, streak_days, longest_streak, school, city, role')
         .eq('id', student.userId)
         .single(),
       supabase
@@ -116,7 +130,21 @@ export default async function ProfilePage() {
           <h1 className="truncate font-display text-xl font-bold tracking-tight sm:text-2xl">
             {profile?.full_name ?? 'Mon profil'}
           </h1>
-          <p className="mt-0.5 flex flex-wrap items-center gap-x-3 text-sm text-foreground-muted">
+
+          {/* The account type is stated plainly on every profile, so it can be
+              checked on someone else's screen rather than taken on trust. */}
+          <p className="mt-1 flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                'rounded-full px-2 py-0.5 text-xs font-semibold',
+                ROLE_STYLE[profile?.role ?? 'student'] ?? ROLE_STYLE.student,
+              )}
+            >
+              {ROLE_LABEL[profile?.role ?? 'student'] ?? 'Élève'}
+            </span>
+          </p>
+
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-3 text-sm text-foreground-muted">
             <span className="inline-flex items-center gap-1.5">
               <Zap className="size-3.5 text-accent-600" aria-hidden />
               {profile?.xp ?? 0} XP
@@ -128,6 +156,26 @@ export default async function ProfilePage() {
           </p>
         </div>
       </header>
+
+      {/* Staff-only. The bottom tab bar has no room for a sixth item, so on a
+          phone this is the only route into the admin area — and it is simply
+          absent for students rather than shown-and-blocked. */}
+      {student.isStaff && (
+        <Link
+          href="/admin"
+          className="mb-4 flex items-center gap-3 rounded-card border-2 border-accent-300 bg-accent-50 p-4 transition hover:border-accent-400 dark:border-accent-800 dark:bg-accent-900/25"
+        >
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-100 text-accent-700 dark:bg-accent-900/50 dark:text-accent-300">
+            <Shield className="size-5" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-display font-semibold">Administration</span>
+            <span className="block text-sm text-foreground-muted">
+              Paiements, contenu et statistiques
+            </span>
+          </span>
+        </Link>
+      )}
 
       {/* ------------------------------------------------------ readiness */}
       <section className="mb-4 rounded-card border border-border bg-surface p-6 text-center shadow-card">

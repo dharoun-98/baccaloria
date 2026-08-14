@@ -176,6 +176,33 @@ async function main() {
       failures++
       console.log(`  ${RED}✗ sans RLS: ${unprotected.map((r) => r.relname).join(', ')}${RESET}`)
     }
+
+    // A view over an RLS-protected table runs as its CREATOR unless
+    // security_invoker is set, silently bypassing every policy underneath.
+    // lesson_admin_overview shipped that way and exposed 5 draft lessons to
+    // any signed-in student. Enabling RLS on the tables is not enough.
+    const { rows: leakyViews } = await db.query(`
+      select c.relname
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public'
+        and c.relkind = 'v'
+        and coalesce(
+              (select option_value from pg_options_to_table(c.reloptions)
+               where option_name = 'security_invoker'),
+              'false'
+            ) not in ('true', 'on')
+      order by c.relname
+    `)
+
+    if (leakyViews.length === 0) {
+      console.log(`  ${GREEN}✓${RESET} toutes les vues utilisent security_invoker`)
+    } else {
+      failures++
+      console.log(
+        `  ${RED}✗ vues contournant RLS: ${leakyViews.map((r) => r.relname).join(', ')}${RESET}`,
+      )
+    }
   }
 
   // ---------------------------------------------------- functional smoke --
