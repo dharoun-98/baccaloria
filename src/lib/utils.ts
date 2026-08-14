@@ -33,6 +33,16 @@ export function formatDuration(seconds: number): string {
   return `${s}s`
 }
 
+/** "Haroun Darai" -> "HD". Falls back to "?" for a missing name. */
+export function initials(fullName: string | null | undefined): string {
+  const parts = (fullName ?? '').trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '?'
+  return parts
+    .slice(0, 2)
+    .map((part: string) => part.charAt(0).toUpperCase())
+    .join('')
+}
+
 /** 1 234,50 DH — Moroccan dirham, French formatting. */
 export function formatMAD(amount: number): string {
   return new Intl.NumberFormat('fr-MA', {

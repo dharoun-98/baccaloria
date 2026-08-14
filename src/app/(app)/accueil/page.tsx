@@ -104,7 +104,7 @@ export default async function HomePage() {
         </p>
 
         <Link
-          href="/profil/statistiques"
+          href="/profil"
           className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
         >
           {t('profile.details')}

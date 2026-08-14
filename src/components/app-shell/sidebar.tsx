@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation'
 import { NAV_ITEMS } from './nav-items'
 
 import { signOut } from '@/app/(auth)/actions'
-import { cn } from '@/lib/utils'
+import { cn, initials } from '@/lib/utils'
 
 type SidebarProps = {
   fullName: string | null
@@ -19,12 +19,6 @@ type SidebarProps = {
 export function Sidebar({ fullName, filiereCode, isStaff }: SidebarProps) {
   const pathname = usePathname()
   const t = useTranslations('nav')
-
-  const initials = (fullName ?? '?')
-    .split(' ')
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('')
 
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-border bg-surface md:flex">
@@ -83,7 +77,7 @@ export function Sidebar({ fullName, filiereCode, isStaff }: SidebarProps) {
       <div className="border-t border-border p-3">
         <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface-sunken text-xs font-bold text-foreground-muted">
-            {initials}
+            {initials(fullName)}
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium">
