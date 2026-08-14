@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
 import { BlockEditor } from './block-editor'
+import { Placements } from './placements'
 import { PublishControls } from './publish-controls'
 
 import type { Block } from '@/components/lesson/lesson-block'
@@ -33,17 +34,63 @@ export default async function EditLessonPage({
 
   if (!lesson) notFound()
 
-  const [{ data: blockRows }, { data: subject }] = await Promise.all([
-    supabase
-      .from('lesson_blocks')
-      .select('id, kind, title_fr, content, position')
-      .eq('lesson_id', id)
-      .order('position'),
-    supabase.from('subjects').select('slug, name_fr').eq('id', lesson.subject_id).maybeSingle(),
-  ])
+  const [{ data: blockRows }, { data: subject }, { data: placementRows }, { data: unitRows }] =
+    await Promise.all([
+      supabase
+        .from('lesson_blocks')
+        .select('id, kind, title_fr, content, position')
+        .eq('lesson_id', id)
+        .order('position'),
+      supabase
+        .from('subjects')
+        .select('slug, name_fr')
+        .eq('id', lesson.subject_id)
+        .maybeSingle(),
+      supabase.from('lesson_placements').select('unit_id').eq('lesson_id', id),
+      // Only units of THIS subject: placing a maths lesson under a philosophy
+      // chapter is never what anyone means.
+      supabase
+        .from('units')
+        .select(
+          `id, title_fr,
+           filiere_subjects!inner ( subject_id, filieres ( code, name_fr ), subjects ( name_fr ) )`,
+        )
+        .eq('filiere_subjects.subject_id', lesson.subject_id),
+    ])
 
   const blocks = (blockRows ?? []) as unknown as Block[]
   const needsReview = lesson.ai_generated
+
+  const placedUnitIds = new Set((placementRows ?? []).map((p) => p.unit_id))
+
+  const allUnits = ((unitRows ?? []) as unknown as {
+    id: string
+    title_fr: string
+    filiere_subjects: {
+      filieres: { code: string; name_fr: string } | null
+      subjects: { name_fr: string } | null
+    } | null
+  }[]).map((u) => ({
+    id: u.id,
+    title: u.title_fr,
+    filiereCode: u.filiere_subjects?.filieres?.code ?? '?',
+    filiereName: u.filiere_subjects?.filieres?.name_fr ?? '',
+    subjectName: u.filiere_subjects?.subjects?.name_fr ?? '',
+  }))
+
+  const placements = allUnits
+    .filter((u) => placedUnitIds.has(u.id))
+    .map((u) => ({
+      unitId: u.id,
+      unitTitle: u.title,
+      filiereCode: u.filiereCode,
+      filiereName: u.filiereName,
+      subjectName: u.subjectName,
+    }))
+
+  const available = allUnits
+    .filter((u) => !placedUnitIds.has(u.id))
+    .map((u) => ({ id: u.id, label: `${u.filiereCode} · ${u.subjectName} — ${u.title}` }))
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
@@ -98,6 +145,14 @@ export default async function EditLessonPage({
           lessonId={lesson.id}
           status={lesson.status}
           blockCount={blocks.length}
+        />
+      </div>
+
+      <div className="mb-6">
+        <Placements
+          lessonId={lesson.id}
+          placements={placements}
+          available={available}
         />
       </div>
 
