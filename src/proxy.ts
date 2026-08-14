@@ -20,9 +20,42 @@ const AUTH_ROUTES = ['/connexion', '/inscription']
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  // NEXT_PUBLIC_* values are inlined at BUILD time. If the build ran before
+  // the variables existed in the hosting project, they are baked in as
+  // undefined and no amount of restarting helps — it needs a REDEPLOY.
+  //
+  // Previously this crashed createServerClient on every request, so a missing
+  // variable took down the whole site, marketing pages included. Degrade
+  // instead: serve what does not need auth, and let /api/sante report the
+  // actual cause.
+  if (!supabaseUrl || !supabaseKey) {
+    console.error(
+      '[proxy] Supabase env vars missing at runtime. ' +
+        'NEXT_PUBLIC_SUPABASE_URL present: ' +
+        Boolean(supabaseUrl) +
+        ', NEXT_PUBLIC_SUPABASE_ANON_KEY present: ' +
+        Boolean(supabaseKey) +
+        '. Set both in the hosting project, then REDEPLOY (a restart is not enough).',
+    )
+
+    // Never let an unauthenticated user reach a private area by accident just
+    // because configuration is broken.
+    if (PROTECTED_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p))) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/connexion'
+      url.searchParams.set('erreur', 'configuration')
+      return NextResponse.redirect(url)
+    }
+
+    return response
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {

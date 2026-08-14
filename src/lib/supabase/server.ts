@@ -10,9 +10,25 @@ import type { Database } from './database.types'
 export async function createClient() {
   const cookieStore = await cookies()
 
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  // supabase-js would otherwise throw a bare "supabaseUrl is required", which
+  // says nothing about the actual cause on a hosted deployment.
+  if (!url || !anonKey) {
+    throw new Error(
+      'Supabase is not configured. Missing ' +
+        [!url && 'NEXT_PUBLIC_SUPABASE_URL', !anonKey && 'NEXT_PUBLIC_SUPABASE_ANON_KEY']
+          .filter(Boolean)
+          .join(' and ') +
+        '. These are inlined at build time, so add them in the hosting project ' +
+        'and REDEPLOY. See /api/sante for what the running deployment actually has.',
+    )
+  }
+
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {
