@@ -168,14 +168,69 @@ export async function requestPasswordReset(
   const supabase = await createClient()
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
+  // Routed through /auth/confirmer so the PKCE code is exchanged for a session
+  // by the one handler that knows how. Pointing straight at the form would
+  // land the user there with no session, unable to set anything.
   await supabase.auth.resetPasswordForEmail(parsed.data, {
-    redirectTo: `${origin}/auth/nouveau-mot-de-passe`,
+    redirectTo: `${origin}/auth/confirmer?next=/nouveau-mot-de-passe`,
   })
 
   // Always redirect to the same confirmation, whether or not the address
   // exists. Telling the caller "no such account" hands an attacker a way to
   // enumerate who is registered.
   redirect('/verifier-email?reset=1')
+}
+
+// -------------------------------------------------- set a new password -----
+const newPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, 'Ton mot de passe doit faire au moins 8 caractères.')
+      .max(72, 'Ton mot de passe est trop long.'),
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, {
+    path: ['confirm'],
+    message: 'Les deux mots de passe ne sont pas identiques.',
+  })
+
+export async function setNewPassword(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const parsed = newPasswordSchema.safeParse({
+    password: formData.get('password'),
+    confirm: formData.get('confirm'),
+  })
+
+  if (!parsed.success) {
+    return { fieldErrors: toFieldErrors(parsed.error) }
+  }
+
+  const supabase = await createClient()
+
+  // Reaching this page means /auth/confirmer already exchanged the recovery
+  // code for a session. Without one, updateUser has nobody to update.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      error:
+        "Ton lien de réinitialisation a expiré. Demande-en un nouveau depuis « Mot de passe oublié ».",
+    }
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
+
+  if (error) {
+    return { error: translateAuthError(error.message) }
+  }
+
+  revalidatePath('/', 'layout')
+  redirect('/accueil')
 }
 
 // -------------------------------------------------- choose your filière -----

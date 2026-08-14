@@ -84,6 +84,34 @@ async function main() {
       record(m[1], file)
     }
 
+    // Paths built in server code, which no href scan would ever see. This is
+    // how /auth/nouveau-mot-de-passe reached production as a 404: it existed
+    // only inside a resetPasswordForEmail redirectTo, never as a link.
+    //   redirectTo: `${origin}/auth/confirmer?next=/x`
+    //   redirect('/accueil')   ·   url.pathname = '/connexion'
+    const serverPatterns = [
+      /(?:redirectTo|emailRedirectTo)\s*:\s*[`'"]\$\{[^}]*\}(\/[^`'"]*)[`'"]/g,
+      /(?:redirectTo|emailRedirectTo)\s*:\s*[`'"](\/[^`'"]*)[`'"]/g,
+      /\bredirect\(\s*[`'"](\/[^`'"$]*)[`'"]/g,
+      /\bpathname\s*=\s*[`'"](\/[^`'"$]*)[`'"]/g,
+    ]
+
+    for (const pattern of serverPatterns) {
+      for (const m of source.matchAll(pattern)) {
+        const raw = m[1]
+        record(raw.split('?')[0], file)
+
+        // A `next=` / `suivant=` parameter is itself a route that must exist.
+        const query = raw.includes('?') ? raw.slice(raw.indexOf('?') + 1) : ''
+        for (const q of query.split('&')) {
+          const [k, v] = q.split('=')
+          if ((k === 'next' || k === 'suivant') && v?.startsWith('/')) {
+            record(v, file)
+          }
+        }
+      }
+    }
+
     // Template literals: href={`/quiz/${id}`}. Only the static prefix before
     // the first interpolation is checkable, so it is matched as a prefix —
     // otherwise every dynamic link reads as broken.
