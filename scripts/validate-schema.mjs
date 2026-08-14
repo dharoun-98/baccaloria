@@ -29,6 +29,20 @@ const SUPABASE_STUBS = /* sql */ `
   create schema if not exists auth;
   create schema if not exists storage;
 
+  -- Supabase ships these roles; plain Postgres does not. Needed so GRANTs in
+  -- the migrations resolve.
+  do $$ begin
+    if not exists (select 1 from pg_roles where rolname = 'anon') then
+      create role anon nologin;
+    end if;
+    if not exists (select 1 from pg_roles where rolname = 'authenticated') then
+      create role authenticated nologin;
+    end if;
+    if not exists (select 1 from pg_roles where rolname = 'service_role') then
+      create role service_role nologin;
+    end if;
+  end $$;
+
   -- Mirror Supabase's real layout: pgcrypto lives in \`extensions\`, NOT in
   -- \`public\`. This matters. A security-definer function pinned to
   -- \`set search_path = public\` cannot see gen_random_bytes() here, exactly as
@@ -46,10 +60,12 @@ const SUPABASE_STUBS = /* sql */ `
     created_at timestamptz not null default now()
   );
 
-  -- In production this reads the JWT claim. Here it just has to exist and
-  -- return uuid so policies referencing it compile.
+  -- In production this reads the JWT claim. Here it reads a session setting so
+  -- tests can impersonate a user: select set_config('test.user_id', '<uuid>', false)
   create or replace function auth.uid() returns uuid
-    language sql stable as $$ select null::uuid $$;
+    language sql stable as $$
+      select nullif(current_setting('test.user_id', true), '')::uuid
+    $$;
 
   create or replace function auth.role() returns text
     language sql stable as $$ select 'authenticated'::text $$;
@@ -229,6 +245,120 @@ async function main() {
           okIdempotent ? '' : ` ${RED}(attendu 6)${RESET}`
         }`,
       )
+    } catch (error) {
+      failures++
+      console.error(`  ${RED}✗ ${error.message}${RESET}`)
+    }
+  }
+
+  // ------------------------------------------------- quiz engine smoke ----
+  // The security claim of the whole assessment system is that the answer key
+  // never reaches the browser before submission, and that scores are computed
+  // in the database. Assert both, rather than trusting the code reads right.
+  if (failures === 0) {
+    console.log(`\n${DIM}Smoke test — moteur de quiz:${RESET}`)
+    const USER = '11111111-1111-1111-1111-111111111111'
+
+    const check = (ok, label, extra = '') => {
+      if (!ok) failures++
+      console.log(`  ${ok ? GREEN + '✓' : RED + '✗'}${RESET} ${label}${extra}`)
+    }
+
+    try {
+      // Minimal published lesson + two questions + a pooled quiz.
+      await db.exec(`
+        select set_config('test.user_id', '${USER}', false);
+
+        insert into public.lessons (id, subject_id, slug, title_fr, status, reviewed_by)
+        values ('22222222-2222-2222-2222-222222222222',
+                (select id from public.subjects where slug = 'mathematiques'),
+                'quiz-smoke', 'Quiz smoke', 'published', '${USER}');
+
+        insert into public.questions (id, subject_id, lesson_id, type, stem, choices, answer, explanation, points, status, reviewed_by)
+        values
+          ('33333333-3333-3333-3333-333333333331',
+           (select id from public.subjects where slug='mathematiques'),
+           '22222222-2222-2222-2222-222222222222', 'mcq_single',
+           '{"markdown":"Q1"}'::jsonb,
+           '[{"id":"a","label":"bon","is_correct":true},{"id":"b","label":"mauvais","is_correct":false}]'::jsonb,
+           '{"choice":"a"}'::jsonb, '{"markdown":"parce que"}'::jsonb, 1, 'published', '${USER}'),
+          ('33333333-3333-3333-3333-333333333332',
+           (select id from public.subjects where slug='mathematiques'),
+           '22222222-2222-2222-2222-222222222222', 'mcq_single',
+           '{"markdown":"Q2"}'::jsonb,
+           '[{"id":"a","label":"mauvais","is_correct":false},{"id":"b","label":"bon","is_correct":true}]'::jsonb,
+           '{"choice":"b"}'::jsonb, '{"markdown":"parce que"}'::jsonb, 1, 'published', '${USER}');
+
+        insert into public.assessments (id, kind, lesson_id, title_fr, question_count, status, access_tier)
+        values ('44444444-4444-4444-4444-444444444444', 'lesson_quiz',
+                '22222222-2222-2222-2222-222222222222', 'Quiz smoke', 2, 'published', 'free');
+
+        insert into public.assessment_pools (assessment_id, filter, draw_count)
+        values ('44444444-4444-4444-4444-444444444444',
+                '{"lesson_ids":["22222222-2222-2222-2222-222222222222"]}'::jsonb, 2);
+      `)
+
+      const { rows: startRows } = await db.query(
+        `select public.start_attempt('44444444-4444-4444-4444-444444444444') as payload`,
+      )
+      const started = startRows[0].payload
+
+      check(started.questions?.length === 2, 'tirage de 2 questions')
+
+      // The critical assertion: no answer key in the payload.
+      const serialised = JSON.stringify(started)
+      check(!serialised.includes('is_correct'), "aucun 'is_correct' dans le tirage")
+      check(!serialised.includes('"answer"'), "aucune réponse dans le tirage")
+      check(!serialised.includes('parce que'), "aucune explication dans le tirage")
+
+      // Answer the first question correctly, the second wrongly.
+      const [q1, q2] = started.questions
+      const answers = [
+        { question_id: q1.id, response: { choice: q1.id.endsWith('1') ? 'a' : 'b' } },
+        { question_id: q2.id, response: { choice: q2.id.endsWith('1') ? 'b' : 'a' } },
+      ]
+
+      const { rows: submitRows } = await db.query(
+        `select public.submit_attempt('${started.attempt_id}', $1::jsonb) as payload`,
+        [JSON.stringify(answers)],
+      )
+      const graded = submitRows[0].payload
+
+      check(Number(graded.max_score) === 2, 'barème total = 2', ` (${graded.max_score})`)
+      check(
+        Number(graded.score) === 1 && Number(graded.percentage) === 50,
+        'note calculée côté serveur = 1/2 (50%)',
+        ` (${graded.score}/${graded.max_score}, ${graded.percentage}%)`,
+      )
+      check(
+        JSON.stringify(graded).includes('parce que'),
+        'explications révélées APRÈS correction',
+      )
+
+      // Submitting twice must not be possible.
+      let rejected = false
+      try {
+        await db.query(
+          `select public.submit_attempt('${started.attempt_id}', '[]'::jsonb)`,
+        )
+      } catch {
+        rejected = true
+      }
+      check(rejected, 'double soumission refusée')
+
+      // Another user must not be able to read this attempt.
+      await db.exec(
+        `select set_config('test.user_id', '99999999-9999-9999-9999-999999999999', false)`,
+      )
+      let blocked = false
+      try {
+        await db.query(`select public.get_attempt_results('${started.attempt_id}')`)
+      } catch {
+        blocked = true
+      }
+      check(blocked, "tentative d'un autre élève inaccessible")
+
+      await db.exec(`select set_config('test.user_id', '${USER}', false)`)
     } catch (error) {
       failures++
       console.error(`  ${RED}✗ ${error.message}${RESET}`)

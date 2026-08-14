@@ -60,7 +60,7 @@ export default async function LessonPage({ params }: { params: Promise<Params> }
   // The blocks query is subject to the "lesson body gated by tier" policy, so
   // a locked lesson returns nothing here even if this check were removed. The
   // paywall is enforced by the database, not by this component.
-  const [{ data: blockRows }, { data: mindmapRows }, { data: progress }] =
+  const [{ data: blockRows }, { data: mindmapRows }, { data: progress }, { data: quiz }] =
     await Promise.all([
       supabase
         .from('lesson_blocks')
@@ -74,9 +74,16 @@ export default async function LessonPage({ params }: { params: Promise<Params> }
         .eq('status', 'published'),
       supabase
         .from('lesson_progress')
-        .select('state')
+        .select('state, best_quiz_pct')
         .eq('user_id', student.userId)
         .eq('lesson_id', lesson.id)
+        .maybeSingle(),
+      supabase
+        .from('assessments')
+        .select('id')
+        .eq('lesson_id', lesson.id)
+        .eq('kind', 'lesson_quiz')
+        .eq('status', 'published')
         .maybeSingle(),
     ])
 
@@ -170,7 +177,27 @@ export default async function LessonPage({ params }: { params: Promise<Params> }
             </p>
           )}
 
-          <div className="mt-8 border-t border-border pt-6">
+          <div className="mt-8 flex flex-col gap-3 border-t border-border pt-6">
+            {quiz && (
+              <Link
+                href={`/quiz/${quiz.id}`}
+                className={cn(
+                  buttonVariants({ size: 'lg', variant: 'accent', block: true }),
+                  'flex-col gap-0.5 py-3',
+                )}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <Target className="size-4" aria-hidden />
+                  Teste-toi sur cette leçon
+                </span>
+                {progress?.best_quiz_pct != null && (
+                  <span className="text-xs font-medium opacity-85">
+                    Meilleur score : {Math.round(Number(progress.best_quiz_pct))}%
+                  </span>
+                )}
+              </Link>
+            )}
+
             <DoneButton
               lessonId={lesson.id}
               initialDone={progress?.state === 'completed'}
