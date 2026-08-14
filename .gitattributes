@@ -1,0 +1,17 @@
+# Normalise line endings so Windows, macOS and Linux contributors — and
+# Vercel's Linux builders — all see the same bytes.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+
+pnpm-lock.yaml -diff linguist-generated
+src/lib/supabase/database.types.ts linguist-generated

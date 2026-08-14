@@ -1,0 +1,11 @@
+# pnpm 11 reads build-script approvals from here, not from package.json.
+# These packages ship native binaries that Next.js, Tailwind and the
+# Supabase CLI need in order to run at all.
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  '@tailwindcss/oxide': true
+  unrs-resolver: true
+  sharp: true
+  esbuild: true
+  supabase: true

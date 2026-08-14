@@ -1,0 +1,46 @@
+{
+  "name": "Baccaloria — Prépare ton Bac",
+  "short_name": "Baccaloria",
+  "description": "Cours résumés, fiches mémo, quiz et examens nationaux corrigés pour le Baccalauréat marocain.",
+  "start_url": "/accueil",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0f766e",
+  "lang": "fr",
+  "dir": "ltr",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Examens nationaux",
+      "short_name": "Examens",
+      "url": "/examens"
+    },
+    {
+      "name": "Ma progression",
+      "short_name": "Progression",
+      "url": "/profil/statistiques"
+    }
+  ]
+}

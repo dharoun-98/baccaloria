@@ -1,0 +1,242 @@
+@import 'tailwindcss';
+@import 'katex/dist/katex.min.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   Design tokens
+   Brand: deep zellige green (trust, education) + saffron (energy, reward).
+   Chosen so that "locked / premium" states can use saffron without ever
+   colliding with success-green or error-red.
+   ========================================================================== */
+:root {
+  /* brand — zellige green */
+  --brand-50:  oklch(0.971 0.021 168);
+  --brand-100: oklch(0.941 0.045 168);
+  --brand-200: oklch(0.888 0.081 168);
+  --brand-300: oklch(0.812 0.113 168);
+  --brand-400: oklch(0.722 0.126 168);
+  --brand-500: oklch(0.638 0.124 168);
+  --brand-600: oklch(0.548 0.108 168);
+  --brand-700: oklch(0.455 0.089 168);
+  --brand-800: oklch(0.378 0.072 168);
+  --brand-900: oklch(0.318 0.059 168);
+  --brand-950: oklch(0.216 0.042 168);
+
+  /* accent — saffron */
+  --accent-50:  oklch(0.977 0.031 78);
+  --accent-100: oklch(0.951 0.062 78);
+  --accent-200: oklch(0.903 0.108 76);
+  --accent-300: oklch(0.851 0.142 74);
+  --accent-400: oklch(0.795 0.158 68);
+  --accent-500: oklch(0.744 0.161 60);
+  --accent-600: oklch(0.661 0.155 48);
+  --accent-700: oklch(0.552 0.135 42);
+  --accent-800: oklch(0.462 0.111 40);
+  --accent-900: oklch(0.398 0.092 40);
+
+  /* neutrals — very slightly warm, friendlier than pure slate */
+  --neutral-0:   oklch(1 0 0);
+  --neutral-50:  oklch(0.985 0.002 90);
+  --neutral-100: oklch(0.968 0.004 90);
+  --neutral-200: oklch(0.925 0.006 90);
+  --neutral-300: oklch(0.869 0.008 90);
+  --neutral-400: oklch(0.708 0.011 90);
+  --neutral-500: oklch(0.556 0.012 90);
+  --neutral-600: oklch(0.442 0.011 90);
+  --neutral-700: oklch(0.371 0.010 90);
+  --neutral-800: oklch(0.269 0.008 90);
+  --neutral-900: oklch(0.206 0.006 90);
+  --neutral-950: oklch(0.145 0.005 90);
+
+  /* semantic */
+  --success: oklch(0.596 0.145 155);
+  --warning: oklch(0.761 0.153 71);
+  --danger:  oklch(0.596 0.212 18);
+  --info:    oklch(0.638 0.137 240);
+
+  /* surface roles — light theme */
+  --background:        var(--neutral-50);
+  --surface:           var(--neutral-0);
+  --surface-raised:    var(--neutral-0);
+  --surface-sunken:    var(--neutral-100);
+  --border:            var(--neutral-200);
+  --border-strong:     var(--neutral-300);
+  --foreground:        var(--neutral-900);
+  --foreground-muted:  var(--neutral-600);
+  --foreground-subtle: var(--neutral-500);
+
+  --primary:            var(--brand-600);
+  --primary-hover:      var(--brand-700);
+  --primary-foreground: var(--neutral-0);
+  --primary-subtle:     var(--brand-50);
+
+  --ring: var(--brand-500);
+
+  /* readiness bands 0-4, used by the progress ring and the dashboard */
+  --band-0: var(--neutral-400);
+  --band-1: oklch(0.661 0.155 48);
+  --band-2: oklch(0.761 0.153 71);
+  --band-3: oklch(0.700 0.140 140);
+  --band-4: var(--success);
+
+  --radius: 0.875rem;
+
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.04), 0 4px 12px oklch(0 0 0 / 0.05);
+  --shadow-pop:  0 8px 30px oklch(0 0 0 / 0.10);
+}
+
+.dark {
+  --background:        var(--neutral-950);
+  --surface:           var(--neutral-900);
+  --surface-raised:    var(--neutral-800);
+  --surface-sunken:    oklch(0.115 0.005 90);
+  --border:            oklch(0.30 0.008 90);
+  --border-strong:     oklch(0.38 0.010 90);
+  --foreground:        var(--neutral-50);
+  --foreground-muted:  var(--neutral-400);
+  --foreground-subtle: var(--neutral-500);
+
+  --primary:            var(--brand-400);
+  --primary-hover:      var(--brand-300);
+  --primary-foreground: var(--neutral-950);
+  --primary-subtle:     oklch(0.28 0.045 168);
+
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 4px 12px oklch(0 0 0 / 0.35);
+  --shadow-pop:  0 8px 30px oklch(0 0 0 / 0.5);
+}
+
+/* ------------------------------------------------------------ Tailwind ---- */
+@theme inline {
+  --color-brand-50:  var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+
+  --color-accent-50:  var(--accent-50);
+  --color-accent-100: var(--accent-100);
+  --color-accent-200: var(--accent-200);
+  --color-accent-300: var(--accent-300);
+  --color-accent-400: var(--accent-400);
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
+  --color-accent-800: var(--accent-800);
+  --color-accent-900: var(--accent-900);
+
+  --color-background:        var(--background);
+  --color-surface:           var(--surface);
+  --color-surface-raised:    var(--surface-raised);
+  --color-surface-sunken:    var(--surface-sunken);
+  --color-border:            var(--border);
+  --color-border-strong:     var(--border-strong);
+  --color-foreground:        var(--foreground);
+  --color-foreground-muted:  var(--foreground-muted);
+  --color-foreground-subtle: var(--foreground-subtle);
+
+  --color-primary:            var(--primary);
+  --color-primary-hover:      var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-subtle:     var(--primary-subtle);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger:  var(--danger);
+  --color-info:    var(--info);
+
+  --color-band-0: var(--band-0);
+  --color-band-1: var(--band-1);
+  --color-band-2: var(--band-2);
+  --color-band-3: var(--band-3);
+  --color-band-4: var(--band-4);
+
+  --radius-card: var(--radius);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-pop:  var(--shadow-pop);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-arabic: var(--font-arabic), 'Noto Naskh Arabic', serif;
+}
+
+/* ======================================================== app-shell base == */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    /* Native-app feel: no rubber-band scroll on the shell itself. */
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Respect the notch and the home indicator on installed PWAs. */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Students on shared/older Android devices deserve a working experience,
+     but honour a stated motion preference absolutely. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  [dir='rtl'] body {
+    font-family: var(--font-arabic);
+  }
+}
+
+@layer utilities {
+  /* Elements that must clear the fixed bottom tab bar on mobile. */
+  .pb-tabbar {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Long LaTeX lines must scroll inside their block, never widen the page. */
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.25rem;
+  }
+}

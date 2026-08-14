@@ -1,0 +1,193 @@
+{
+  "app": {
+    "name": "Baccaloria",
+    "tagline": "Ton Bac, préparé intelligemment.",
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue.",
+    "retry": "Réessayer",
+    "back": "Retour",
+    "next": "Suivant",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "search": "Rechercher"
+  },
+
+  "nav": {
+    "home": "Accueil",
+    "subjects": "Matières",
+    "tests": "Tests",
+    "exams": "Examens",
+    "profile": "Profil",
+    "leaderboard": "Classement",
+    "admin": "Administration"
+  },
+
+  "auth": {
+    "signIn": "Se connecter",
+    "signUp": "Créer un compte",
+    "signOut": "Se déconnecter",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "fullName": "Nom complet",
+    "phone": "Téléphone",
+    "filiere": "Filière",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Tu as déjà un compte ?",
+    "checkEmail": "Vérifie ta boîte mail",
+    "checkEmailBody": "Nous t'avons envoyé un lien de confirmation. Clique dessus pour activer ton compte.",
+    "chooseFiliere": "Choisis ta filière",
+    "chooseFiliereHelp": "Tout le contenu sera adapté à ton programme. Tu pourras la changer plus tard."
+  },
+
+  "countdown": {
+    "title": "Examen National",
+    "daysLeft": "{days, plural, =0 {C'est aujourd'hui} one {# jour restant} other {# jours restants}}",
+    "weeksLeft": "{weeks, plural, one {# semaine} other {# semaines}}",
+    "estimated": "Date estimée — sera confirmée par le Ministère",
+    "confirmed": "Date officielle"
+  },
+
+  "readiness": {
+    "title": "Ta préparation",
+    "band0Title": "Pas encore là",
+    "band0Body": "Tout commence maintenant. Ouvre ta première leçon, on avance ensemble.",
+    "band1Title": "Il y a du progrès, continue !",
+    "band1Body": "Les bases sont posées. Garde le rythme, c'est la régularité qui paie.",
+    "band2Title": "Bonne progression",
+    "band2Body": "Tu tiens la route. Attaque les tests de palier pour consolider.",
+    "band3Title": "Tu y es presque !",
+    "band3Body": "Encore un effort sur tes points faibles et tu passes dans le vert.",
+    "band4Title": "Tu es prêt·e !",
+    "band4Body": "Enfin… c'est ce que disent les données. Fonce, et rends-nous fiers !",
+
+    "coverage": "Couverture du programme",
+    "mastery": "Maîtrise",
+    "exam": "Examens blancs",
+    "timing": "Gestion du temps",
+    "retention": "Mémorisation",
+    "explain": "Comment ce score est calculé"
+  },
+
+  "lesson": {
+    "resume": "L'essentiel",
+    "cheatsheet": "Fiche mémo",
+    "mindmap": "Carte mentale",
+    "formula": "Formules",
+    "method": "Méthode",
+    "example": "Exemple",
+    "pitfall": "Erreur fréquente",
+    "examTip": "Ça tombe à l'examen",
+    "objectives": "À la fin de cette leçon, tu sauras",
+    "keyTerms": "Mots-clés",
+    "minutes": "{count} min",
+    "difficulty1": "Accessible",
+    "difficulty2": "Intermédiaire",
+    "difficulty3": "Exigeant",
+    "examFrequency": "Tombe {count} fois sur 5 aux examens",
+    "markDone": "Marquer comme terminée",
+    "done": "Terminée",
+    "startQuiz": "Teste-toi sur cette leçon",
+    "locked": "Leçon Premium",
+    "lockedBody": "Débloque tout le programme, les tests et les examens corrigés."
+  },
+
+  "quiz": {
+    "title": "Quiz",
+    "question": "Question {current} sur {total}",
+    "submit": "Valider",
+    "skip": "Passer",
+    "finish": "Terminer",
+    "yourScore": "Ton score",
+    "correct": "Bonne réponse",
+    "incorrect": "Réponse incorrecte",
+    "explanation": "Explication",
+    "retry": "Refaire le quiz",
+    "reviewMistakes": "Revoir mes erreurs",
+    "newQuestions": "Les questions changent à chaque tentative."
+  },
+
+  "tests": {
+    "title": "Tests de palier",
+    "subtitle": "Un palier = un groupe de leçons. Prouve que tu les maîtrises.",
+    "locked": "Verrouillé",
+    "unlockAt": "Atteins {pct}% sur les leçons du palier pour débloquer",
+    "start": "Lancer le test",
+    "bestScore": "Meilleur score"
+  },
+
+  "exams": {
+    "title": "Examens nationaux",
+    "challenge": "Prêt·e à relever le défi ? Montre-nous ce que tu vaux.",
+    "chooseRandom": "Examen surprise",
+    "chooseSpecific": "Choisir un examen",
+    "year": "Session {year}",
+    "sessionNormale": "Session normale",
+    "sessionRattrapage": "Session de rattrapage",
+    "duration": "Durée : {minutes} min",
+    "instructionsTitle": "Avant de commencer",
+    "instruction1": "Installe-toi comme le jour J : au calme, sans téléphone, sans notes.",
+    "instruction2": "Le chronomètre démarre dès que tu cliques et ne s'arrête pas.",
+    "instruction3": "Prépare une feuille et un stylo : rédige comme à l'examen.",
+    "instruction4": "À la fin, tu compares avec le corrigé détaillé et tu notes chaque exercice.",
+    "startNow": "Je commence",
+    "timeLeft": "Temps restant",
+    "timeUp": "Temps écoulé",
+    "selfScore": "Note toi-même chaque exercice",
+    "viewCorrection": "Voir le corrigé",
+    "attemptsCount": "{count, plural, =0 {Jamais tenté} one {# tentative} other {# tentatives}}"
+  },
+
+  "profile": {
+    "title": "Mon profil",
+    "stats": "Mes statistiques",
+    "details": "Voir le détail",
+    "streak": "{days, plural, =0 {Aucune série} one {# jour d'affilée} other {# jours d'affilée}}",
+    "xp": "{xp} XP",
+    "badges": "Badges",
+    "share": "Partager ma progression",
+    "shareBody": "Défie tes amis. À vous de voir qui sera le plus prêt le jour J.",
+    "subscription": "Mon abonnement",
+    "timeSpent": "Temps de travail",
+    "strongest": "Ton point fort",
+    "weakest": "À travailler en priorité",
+    "weakestHelp": "Pondéré par les coefficients : c'est là que tu gagnes le plus de points."
+  },
+
+  "billing": {
+    "free": "Gratuit",
+    "premium": "Premium",
+    "upgrade": "Passer au Premium",
+    "howItWorks": "Comment s'abonner",
+    "step1": "Choisis ta formule ci-dessous.",
+    "step2": "Effectue le paiement (virement, CashPlus, Wafacash ou Barid Cash).",
+    "step3": "Envoie-nous le reçu sur WhatsApp avec ton code de référence.",
+    "step4": "Ton accès est activé sous 24 h.",
+    "yourReference": "Ton code de référence",
+    "referenceHelp": "Indique ce code sur le reçu et dans ton message WhatsApp. C'est ce qui nous permet de retrouver ton paiement.",
+    "contactWhatsapp": "Nous écrire sur WhatsApp",
+    "uploadReceipt": "Envoyer mon reçu",
+    "statusPending": "En attente de vérification",
+    "statusApproved": "Abonnement actif",
+    "statusRejected": "Paiement non validé",
+    "expiresOn": "Valable jusqu'au {date}",
+    "untilExam": "Valable jusqu'à ton examen"
+  },
+
+  "admin": {
+    "title": "Administration",
+    "payments": "Paiements",
+    "content": "Contenu",
+    "users": "Utilisateurs",
+    "analytics": "Statistiques",
+    "reviewQueue": "File de relecture",
+    "pendingPayments": "{count} paiement(s) en attente",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "activeSubs": "Abonnements actifs",
+    "revenue": "Revenus",
+    "signups": "Inscriptions",
+    "conversion": "Taux de conversion"
+  }
+}
