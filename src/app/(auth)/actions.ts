@@ -104,7 +104,7 @@ export async function signUp(
   const supabase = await createClient()
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
@@ -116,6 +116,16 @@ export async function signUp(
 
   if (error) {
     return { error: translateAuthError(error.message) }
+  }
+
+  // Whether a session comes back depends on the project's "Confirm email"
+  // setting, which is an operator toggle rather than something this code can
+  // assume. With confirmation off the user is already signed in, and sending
+  // them to "check your inbox" would strand them waiting for an e-mail that is
+  // never sent. Branch on what actually came back.
+  if (data.session) {
+    revalidatePath('/', 'layout')
+    redirect('/bienvenue')
   }
 
   redirect('/verifier-email')
