@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
 import { BlockEditor } from './block-editor'
+import { MetaEditor } from './meta-editor'
 import { Placements } from './placements'
 import { PublishControls } from './publish-controls'
 
@@ -27,7 +28,7 @@ export default async function EditLessonPage({
   const { data: lesson } = await supabase
     .from('lessons')
     .select(
-      'id, slug, title_fr, subtitle_fr, status, ai_generated, reviewed_by, review_notes, exam_frequency, difficulty, est_minutes, access_tier, subject_id',
+      'id, slug, title_fr, subtitle_fr, status, ai_generated, reviewed_by, review_notes, exam_frequency, difficulty, est_minutes, access_tier, subject_id, tags',
     )
     .eq('id', id)
     .maybeSingle()
@@ -57,6 +58,20 @@ export default async function EditLessonPage({
         )
         .eq('filiere_subjects.subject_id', lesson.subject_id),
     ])
+
+  const { data: tagRows } = await supabase
+    .from('tag_catalogue')
+    .select('slug, label_fr, category, description_fr')
+    .eq('is_active', true)
+    .order('category')
+    .order('sort_order')
+
+  const catalogueTags = (tagRows ?? []).map((t) => ({
+    slug: t.slug,
+    label: t.label_fr,
+    category: t.category,
+    description: t.description_fr,
+  }))
 
   const blocks = (blockRows ?? []) as unknown as Block[]
   const needsReview = lesson.ai_generated
@@ -145,6 +160,22 @@ export default async function EditLessonPage({
           lessonId={lesson.id}
           status={lesson.status}
           blockCount={blocks.length}
+        />
+      </div>
+
+      <div className="mb-4">
+        <MetaEditor
+          lesson={{
+            id: lesson.id,
+            title: lesson.title_fr,
+            subtitle: lesson.subtitle_fr,
+            difficulty: lesson.difficulty,
+            estMinutes: lesson.est_minutes,
+            examFrequency: lesson.exam_frequency,
+            accessTier: lesson.access_tier,
+            tags: lesson.tags ?? [],
+          }}
+          catalogue={catalogueTags}
         />
       </div>
 

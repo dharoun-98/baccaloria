@@ -26,18 +26,33 @@ export default async function NewLessonPage() {
 
   const supabase = await createClient()
 
-  const { data } = await supabase
-    .from('filiere_subjects')
-    .select(
-      `id, filiere_id, subject_id, sort_order,
-       filieres ( code, name_fr ),
-       subjects ( name_fr ),
-       units ( id, title_fr, sort_order )`,
-    )
-    .eq('is_active', true)
-    .order('sort_order')
+  const [{ data }, { data: tagRows }] = await Promise.all([
+    supabase
+      .from('filiere_subjects')
+      .select(
+        `id, filiere_id, subject_id, sort_order,
+         filieres ( code, name_fr ),
+         subjects ( name_fr ),
+         units ( id, title_fr, sort_order )`,
+      )
+      .eq('is_active', true)
+      .order('sort_order'),
+    supabase
+      .from('tag_catalogue')
+      .select('slug, label_fr, category, description_fr')
+      .eq('is_active', true)
+      .order('category')
+      .order('sort_order'),
+  ])
 
   const rows = (data ?? []) as unknown as Row[]
+
+  const catalogueTags = (tagRows ?? []).map((t) => ({
+    slug: t.slug,
+    label: t.label_fr,
+    category: t.category,
+    description: t.description_fr,
+  }))
 
   // Group by filière so the form can cascade filière → matière → chapitre.
   const byFiliere = new Map<string, Catalogue['filieres'][number]>()
@@ -85,7 +100,7 @@ export default async function NewLessonPage() {
           Aucune filière active. Active une filière avant de créer du contenu.
         </p>
       ) : (
-        <NewLessonForm catalogue={catalogue} />
+        <NewLessonForm catalogue={catalogue} tags={catalogueTags} />
       )}
     </div>
   )

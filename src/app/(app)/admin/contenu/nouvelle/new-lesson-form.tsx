@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 import { createLesson } from '../lesson-actions'
 
+import { TagPicker, type CatalogueTag } from '@/components/admin/tag-picker'
 import { Button } from '@/components/ui/button'
 import { Field, FormError, Input, Label } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
@@ -27,7 +28,13 @@ export type Catalogue = {
 const selectClass =
   'h-12 w-full rounded-xl border border-border bg-surface px-3 text-base focus-visible:border-brand-400 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--ring)]'
 
-export function NewLessonForm({ catalogue }: { catalogue: Catalogue }) {
+export function NewLessonForm({
+  catalogue,
+  tags,
+}: {
+  catalogue: Catalogue
+  tags: CatalogueTag[]
+}) {
   const [filiereId, setFiliereId] = useState(catalogue.filieres[0]?.id ?? '')
   const [subjectKey, setSubjectKey] = useState('')
   const [unitId, setUnitId] = useState('')
@@ -202,13 +209,10 @@ export function NewLessonForm({ catalogue }: { catalogue: Catalogue }) {
         </div>
       </div>
 
-      <Field
-        label="Tags"
-        htmlFor="tags"
-        hint="Séparés par des virgules. Pour toi, pas pour les élèves — ex. démonstration, à relire, adapté de PC."
-      >
-        <Input id="tags" name="tags" placeholder="analyse, démonstration" />
-      </Field>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="tags-picker">Tags</Label>
+        <TagPicker catalogue={tags} />
+      </div>
 
       <Button type="submit" size="lg" loading={pending} block className={cn('mt-1')}>
         <Plus className="size-4" aria-hidden />
