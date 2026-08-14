@@ -17,6 +17,9 @@ const config = [
       'supabase/**',
       'next-env.d.ts',
       'scripts/**',
+      // Lesson modules are data, not application code. The default-export
+      // rules exist for components and add nothing to a content file.
+      'content/**',
     ],
   },
 ]
