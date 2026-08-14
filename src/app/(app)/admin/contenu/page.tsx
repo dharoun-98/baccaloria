@@ -1,9 +1,10 @@
-import { ArrowLeft, FileText, Plus, Sparkles } from 'lucide-react'
+import { ArrowLeft, FileText, Plus } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { FilterBar, type FilterOptions } from './filter-bar'
+import { LessonList, type UnitOption } from './lesson-list'
 
 import { buttonVariants } from '@/components/ui/button'
 import { requireStudent } from '@/lib/student'
@@ -11,22 +12,6 @@ import { createClient } from '@/lib/supabase/server'
 import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Contenu', robots: { index: false } }
-
-const STATUS_LABEL: Record<string, string> = {
-  draft: 'Brouillon',
-  in_review: 'À relire',
-  changes_requested: 'À corriger',
-  published: 'Publiée',
-  archived: 'Archivée',
-}
-
-const STATUS_STYLE: Record<string, string> = {
-  draft: 'bg-surface-sunken text-foreground-muted',
-  in_review: 'bg-accent-100 text-accent-700 dark:bg-accent-900/40 dark:text-accent-300',
-  changes_requested: 'bg-danger/12 text-danger',
-  published: 'bg-success/12 text-success',
-  archived: 'bg-surface-sunken text-foreground-subtle',
-}
 
 type Overview = {
   id: string
@@ -73,28 +58,61 @@ export default async function ContentPage({
   if (tag) query = query.contains('tags', [tag])
   if (q) query = query.ilike('title_fr', `%${q}%`)
 
-  const [{ data: lessonRows }, { data: subjects }, { data: filieres }, { data: allTags }] =
-    await Promise.all([
-      query,
-      supabase.from('subjects').select('id, name_fr').order('name_fr'),
-      supabase
-        .from('filieres')
-        .select('code, name_fr')
-        .eq('is_active', true)
-        .order('sort_order'),
-      supabase.from('lessons').select('tags'),
-    ])
+  const [
+    { data: lessonRows },
+    { data: subjects },
+    { data: filieres },
+    { data: tagRows },
+    { data: unitRows },
+  ] = await Promise.all([
+    query,
+    supabase.from('subjects').select('id, name_fr').order('name_fr'),
+    supabase
+      .from('filieres')
+      .select('code, name_fr')
+      .eq('is_active', true)
+      .order('sort_order'),
+    supabase
+      .from('tag_catalogue')
+      .select('slug, label_fr, category, description_fr')
+      .eq('is_active', true)
+      .order('category')
+      .order('sort_order'),
+    supabase
+      .from('units')
+      .select(
+        `id, title_fr,
+         filiere_subjects!inner ( subject_id, filieres ( code ), subjects ( name_fr ) )`,
+      ),
+  ])
 
   const lessons = (lessonRows ?? []) as unknown as Overview[]
+
+  const catalogueTags = (tagRows ?? []).map((t) => ({
+    slug: t.slug,
+    label: t.label_fr,
+    category: t.category,
+    description: t.description_fr,
+  }))
+
+  const units: UnitOption[] = ((unitRows ?? []) as unknown as {
+    id: string
+    title_fr: string
+    filiere_subjects: {
+      subject_id: string
+      filieres: { code: string } | null
+      subjects: { name_fr: string } | null
+    } | null
+  }[]).map((u) => ({
+    id: u.id,
+    subjectId: u.filiere_subjects?.subject_id ?? '',
+    label: `${u.filiere_subjects?.filieres?.code ?? '?'} · ${u.filiere_subjects?.subjects?.name_fr ?? ''} — ${u.title_fr}`,
+  }))
 
   const options: FilterOptions = {
     subjects: (subjects ?? []).map((s) => ({ id: s.id, name: s.name_fr })),
     filieres: (filieres ?? []).map((f) => ({ code: f.code, name: f.name_fr })),
-    tags: [
-      ...new Set(
-        ((allTags ?? []) as { tags: string[] | null }[]).flatMap((l) => l.tags ?? []),
-      ),
-    ].sort(),
+    tags: catalogueTags.map((t) => t.slug),
   }
 
   const filtered = Boolean(q || matiere || filiere || statut || tag)
@@ -145,72 +163,24 @@ export default async function ContentPage({
           </p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-2.5">
-          {lessons.map((lesson) => (
-            <li key={lesson.id}>
-              <Link
-                href={`/admin/contenu/${lesson.id}`}
-                className="block rounded-card border border-border bg-surface p-4 shadow-card transition hover:border-brand-300"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-display font-semibold">{lesson.title_fr}</span>
-                  <span
-                    className={cn(
-                      'rounded-full px-2 py-0.5 text-xs font-medium',
-                      STATUS_STYLE[lesson.status] ?? STATUS_STYLE.draft,
-                    )}
-                  >
-                    {STATUS_LABEL[lesson.status] ?? lesson.status}
-                  </span>
-                  {lesson.ai_generated && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-info/12 px-2 py-0.5 text-xs font-medium text-info">
-                      <Sparkles className="size-3" aria-hidden />
-                      IA
-                    </span>
-                  )}
-                  {lesson.access_tier === 'free' && (
-                    <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-950 dark:text-brand-300">
-                      gratuite
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                  <span className="font-medium" style={{ color: lesson.subject_color }}>
-                    {lesson.subject_name}
-                  </span>
-
-                  {lesson.filiere_codes.length > 0 ? (
-                    <span className="font-mono text-foreground-muted">
-                      {lesson.filiere_codes.join(' · ')}
-                    </span>
-                  ) : (
-                    <span className="font-medium text-accent-600">
-                      non placée — invisible pour les élèves
-                    </span>
-                  )}
-
-                  <span className="text-foreground-subtle">
-                    {lesson.block_count} bloc(s)
-                  </span>
-                </div>
-
-                {lesson.tags.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {lesson.tags.map((t) => (
-                      <span
-                        key={t}
-                        className="rounded bg-surface-sunken px-1.5 py-0.5 text-[11px] text-foreground-muted"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <LessonList
+          lessons={lessons.map((l) => ({
+            id: l.id,
+            title: l.title_fr,
+            subtitle: l.subtitle_fr,
+            status: l.status,
+            aiGenerated: l.ai_generated,
+            accessTier: l.access_tier,
+            tags: l.tags ?? [],
+            subjectId: l.subject_id,
+            subjectName: l.subject_name,
+            subjectColor: l.subject_color,
+            filiereCodes: l.filiere_codes ?? [],
+            blockCount: Number(l.block_count),
+          }))}
+          units={units}
+          tags={catalogueTags}
+        />
       )}
     </div>
   )
