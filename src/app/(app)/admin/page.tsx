@@ -143,15 +143,27 @@ export default async function AdminPage() {
       </section>
 
       {/* --------------------------------------------------------- to do */}
-      <section className="mt-6 rounded-card border-2 border-dashed border-border bg-surface p-5">
-        <h2 className="font-display font-semibold">En construction</h2>
+      <section className="mt-6 rounded-card border border-border bg-surface p-5 shadow-card">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-display font-semibold">Contenu</h2>
+          <Link
+            href="/admin/contenu"
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            Relire et publier
+          </Link>
+        </div>
         <p className="mt-1.5 text-sm text-foreground-muted">
-          Cette page est pour l&apos;instant en lecture seule. À venir :
+          {publishedLessons ?? 0} leçon(s) publiée(s)
+          {(inReview ?? 0) > 0 && ` · ${inReview} en attente de relecture`}
         </p>
-        <ul className="mt-3 list-disc pl-5 text-sm text-foreground-muted [&>li]:mt-1">
-          <li>Valider ou refuser un paiement, et activer l&apos;abonnement</li>
-          <li>Éditeur de leçons et file de relecture ({inReview ?? 0} en attente)</li>
+      </section>
+
+      <section className="mt-4 rounded-card border-2 border-dashed border-border bg-surface p-5">
+        <h2 className="font-display font-semibold">Pas encore construit</h2>
+        <ul className="mt-2.5 list-disc pl-5 text-sm text-foreground-muted [&>li]:mt-1">
           <li>Import des sujets d&apos;examen et de leurs corrigés</li>
+          <li>Éditeur de la banque de questions</li>
           <li>Statistiques d&apos;usage et de revenus</li>
         </ul>
       </section>
