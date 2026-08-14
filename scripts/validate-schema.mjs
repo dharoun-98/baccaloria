@@ -365,6 +365,100 @@ async function main() {
     }
   }
 
+  // ------------------------------------------------- payment approval ------
+  // This is the only path from "claims to have paid" to "has access", so the
+  // guarantees are asserted rather than assumed: only admins may approve, an
+  // approval actually grants access, and clicking twice does not grant twice.
+  if (failures === 0) {
+    console.log(`\n${DIM}Smoke test — validation de paiement:${RESET}`)
+    const STUDENT = '11111111-1111-1111-1111-111111111111'
+    const ADMIN = '55555555-5555-5555-5555-555555555555'
+
+    const check = (ok, label, extra = '') => {
+      if (!ok) failures++
+      console.log(`  ${ok ? GREEN + '✓' : RED + '✗'}${RESET} ${label}${extra}`)
+    }
+
+    try {
+      await db.exec(`
+        insert into auth.users (id, email) values ('${ADMIN}', 'admin@test.ma');
+        update public.profiles set role = 'admin' where id = '${ADMIN}';
+
+        insert into public.payment_requests (id, user_id, plan_id, amount_mad, method, status)
+        values ('66666666-6666-6666-6666-666666666666', '${STUDENT}',
+                (select id from public.plans where slug = 'trimestre'),
+                299, 'cashplus', 'pending');
+      `)
+
+      // Before approval the student must not have premium.
+      await db.exec(`select set_config('test.user_id', '${STUDENT}', false)`)
+      const { rows: before } = await db.query(
+        `select public.has_premium_access('${STUDENT}') as premium`,
+      )
+      check(before[0].premium === false, 'pas d’accès premium avant validation')
+
+      // A student must not be able to approve their own payment.
+      let refused = false
+      try {
+        await db.query(
+          `select public.approve_payment('66666666-6666-6666-6666-666666666666', null)`,
+        )
+      } catch {
+        refused = true
+      }
+      check(refused, 'un élève ne peut pas valider son propre paiement')
+
+      // Admin approves.
+      await db.exec(`select set_config('test.user_id', '${ADMIN}', false)`)
+      await db.query(
+        `select public.approve_payment('66666666-6666-6666-6666-666666666666', 'reçu vérifié')`,
+      )
+
+      const { rows: after } = await db.query(
+        `select public.has_premium_access('${STUDENT}') as premium`,
+      )
+      check(after[0].premium === true, 'accès premium accordé après validation')
+
+      const { rows: subs } = await db.query(
+        `select count(*)::int as n, max(granted_by::text) as by
+         from public.subscriptions where user_id = '${STUDENT}' and status = 'active'`,
+      )
+      check(subs[0].n === 1, 'exactement 1 abonnement actif', ` (${subs[0].n})`)
+      check(subs[0].by === ADMIN, 'validateur enregistré (piste d’audit)')
+
+      // Approving again must fail rather than stack a second window.
+      let doubled = false
+      try {
+        await db.query(
+          `select public.approve_payment('66666666-6666-6666-6666-666666666666', null)`,
+        )
+      } catch {
+        doubled = true
+      }
+      check(doubled, 'double validation refusée')
+
+      // Rejection requires a reason.
+      await db.exec(`
+        insert into public.payment_requests (id, user_id, plan_id, amount_mad, method, status)
+        values ('77777777-7777-7777-7777-777777777777', '${STUDENT}',
+                (select id from public.plans where slug = 'trimestre'),
+                299, 'virement', 'pending');
+      `)
+      let needsReason = false
+      try {
+        await db.query(
+          `select public.reject_payment('77777777-7777-7777-7777-777777777777', '')`,
+        )
+      } catch {
+        needsReason = true
+      }
+      check(needsReason, 'refus sans motif rejeté')
+    } catch (error) {
+      failures++
+      console.error(`  ${RED}✗ ${error.message}${RESET}`)
+    }
+  }
+
   await db.close()
 
   console.log()

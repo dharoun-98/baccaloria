@@ -1,5 +1,6 @@
 import { AlertTriangle, BookOpen, CreditCard, Users } from 'lucide-react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { requireStudent } from '@/lib/student'
@@ -104,7 +105,15 @@ export default async function AdminPage() {
 
       {/* -------------------------------------------------- payment queue */}
       <section className="mt-6 rounded-card border border-border bg-surface p-5 shadow-card">
-        <h2 className="font-display font-semibold">File des paiements</h2>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-display font-semibold">File des paiements</h2>
+          <Link
+            href="/admin/paiements"
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            Traiter la file
+          </Link>
+        </div>
 
         {pendingRows && pendingRows.length > 0 ? (
           <ul className="mt-3 flex flex-col divide-y divide-border">
