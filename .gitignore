@@ -47,3 +47,8 @@ yarn-error.log*
 
 # content working files (scans, raw PDFs before processing)
 /content-raw/
+
+# Exam PDFs staged for import. Large binaries with no business in Git history;
+# once imported they live in Supabase Storage. The folder structure and its
+# LISEZ-MOI are tracked, the PDFs are not.
+/Bac exams/**/*.pdf
