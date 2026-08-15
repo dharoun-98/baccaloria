@@ -159,10 +159,24 @@ export default async function AdminPage() {
         </p>
       </section>
 
+      <section className="mt-4 rounded-card border border-border bg-surface p-5 shadow-card">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-display font-semibold">Examens nationaux</h2>
+          <Link
+            href="/admin/examens"
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            Rédiger les corrigés
+          </Link>
+        </div>
+        <p className="mt-1.5 text-sm text-foreground-muted">
+          Découper les sujets en exercices, écrire les corrigés, publier.
+        </p>
+      </section>
+
       <section className="mt-4 rounded-card border-2 border-dashed border-border bg-surface p-5">
         <h2 className="font-display font-semibold">Pas encore construit</h2>
         <ul className="mt-2.5 list-disc pl-5 text-sm text-foreground-muted [&>li]:mt-1">
-          <li>Import des sujets d&apos;examen et de leurs corrigés</li>
           <li>Éditeur de la banque de questions</li>
           <li>Statistiques d&apos;usage et de revenus</li>
         </ul>
