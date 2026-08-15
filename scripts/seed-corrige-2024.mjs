@@ -217,7 +217,153 @@ $[AB]$ et lui est orthogonale : c'est la **médiatrice** de $[AB]$.
     position: 3,
     label: 'Exercice 3 — Nombres complexes',
     points: 4,
-    corrige: null,
+    corrige: String.raw`$A$ et $B$ d'affixes $a = \sqrt{3}\,(1-i)$ et $b = 2+\sqrt{3}+i$.
+
+### 1) $|a| = \sqrt{6}$ et $\arg(a) \equiv -\dfrac{\pi}{4}\ [2\pi]$
+
+$$|a| = \sqrt{3}\times|1-i| = \sqrt{3}\times\sqrt{1^2+(-1)^2} = \sqrt{3}\times\sqrt{2} = \sqrt{6}$$
+
+$\sqrt{3} > 0$ n'change pas l'argument, donc
+$\arg(a) \equiv \arg(1-i) \equiv -\dfrac{\pi}{4}\ [2\pi]$.
+
+> $1-i$ a pour partie réelle $1>0$ et partie imaginaire $-1<0$ : quatrième
+> quadrant, cohérent avec $-\frac{\pi}{4}$.
+
+### 2) a) Forme algébrique puis exponentielle de $\dfrac{b}{a}$
+
+On multiplie par la quantité conjuguée du dénominateur :
+
+$$\frac{b}{a} = \frac{2+\sqrt3+i}{\sqrt3\,(1-i)}
+= \frac{(2+\sqrt3+i)(1+i)}{\sqrt3\,(1-i)(1+i)}
+= \frac{(2+\sqrt3+i)(1+i)}{2\sqrt3}$$
+
+Numérateur :
+
+$$(2+\sqrt3+i)(1+i) = (2+\sqrt3) + (2+\sqrt3)i + i + i^2
+= (1+\sqrt3) + (3+\sqrt3)i$$
+
+On rationalise en multipliant haut et bas par $\sqrt3$ :
+
+$$\frac{b}{a} = \frac{(1+\sqrt3)+(3+\sqrt3)i}{2\sqrt3}
+= \frac{\sqrt3(1+\sqrt3)+\sqrt3(3+\sqrt3)i}{6}
+= \frac{(\sqrt3+3)+(3\sqrt3+3)i}{6}$$
+
+$$\frac{b}{a} = \frac{3+\sqrt3}{6} + \left(\frac{1+\sqrt3}{2}\right)i$$
+
+(car $\frac{3\sqrt3+3}{6} = \frac{3(\sqrt3+1)}{6} = \frac{1+\sqrt3}{2}$).
+
+**Vérification de la forme exponentielle.**
+
+$$\frac{3+\sqrt3}{3}\,e^{i\frac{\pi}{3}}
+= \frac{3+\sqrt3}{3}\left(\cos\frac{\pi}{3} + i\sin\frac{\pi}{3}\right)
+= \frac{3+\sqrt3}{3}\left(\frac12 + \frac{\sqrt3}{2}i\right)$$
+
+- Partie réelle : $\dfrac{3+\sqrt3}{3}\times\dfrac12 = \dfrac{3+\sqrt3}{6}$ ✓
+- Partie imaginaire : $\dfrac{3+\sqrt3}{3}\times\dfrac{\sqrt3}{2} = \dfrac{3\sqrt3+3}{6} = \dfrac{1+\sqrt3}{2}$ ✓
+
+$$\frac{b}{a} = \frac{3+\sqrt3}{3}\,e^{i\frac{\pi}{3}}$$
+
+### 2) b) Forme trigonométrique de $b$, et $b^{24}$ réel
+
+$b = a \times \dfrac{b}{a}$, et $a = \sqrt6\,e^{-i\frac{\pi}{4}}$ d'après 1) :
+
+$$b = \sqrt6\,e^{-i\frac{\pi}{4}} \times \frac{3+\sqrt3}{3}\,e^{i\frac{\pi}{3}}
+= \frac{\sqrt6\,(3+\sqrt3)}{3}\;e^{i\left(\frac{\pi}{3}-\frac{\pi}{4}\right)}$$
+
+**Module.**
+
+$$\frac{\sqrt6(3+\sqrt3)}{3} = \frac{3\sqrt6+\sqrt{18}}{3} = \frac{3\sqrt6+3\sqrt2}{3} = \sqrt6+\sqrt2$$
+
+**Argument.** $\dfrac{\pi}{3}-\dfrac{\pi}{4} = \dfrac{4\pi-3\pi}{12} = \dfrac{\pi}{12}$
+
+$$b = \left(\sqrt6+\sqrt2\right)\left(\cos\frac{\pi}{12} + i\sin\frac{\pi}{12}\right)
+= \left(\sqrt6+\sqrt2\right)e^{i\frac{\pi}{12}}$$
+
+**$b^{24}$.** Par la formule de Moivre :
+
+$$b^{24} = \left(\sqrt6+\sqrt2\right)^{24} e^{i\,24\times\frac{\pi}{12}}
+= \left(\sqrt6+\sqrt2\right)^{24} e^{2i\pi}
+= \left(\sqrt6+\sqrt2\right)^{24}$$
+
+Comme $e^{2i\pi} = 1$, $b^{24}$ est un **nombre réel** (positif).
+
+> C'est tout l'intérêt de la forme exponentielle : élever à la puissance $24$ en
+> forme algébrique serait impraticable.
+
+### 3) a) Écriture complexe de la rotation
+
+$R$ est la rotation de centre $O$ et d'angle $\dfrac{\pi}{6}$, donc
+$z' = e^{i\frac{\pi}{6}}z$. Or
+
+$$e^{i\frac{\pi}{6}} = \cos\frac{\pi}{6}+i\sin\frac{\pi}{6} = \frac{\sqrt3}{2}+\frac12 i = \frac12\left(\sqrt3+i\right)$$
+
+$$z' = \frac12\left(\sqrt3+i\right)z$$
+
+Pour $A' = R(A)$ : la rotation ajoute l'angle à l'argument,
+
+$$\arg(a') \equiv \arg(a)+\frac{\pi}{6} \equiv -\frac{\pi}{4}+\frac{\pi}{6}
+\equiv \frac{-3\pi+2\pi}{12} \equiv -\frac{\pi}{12}\ [2\pi]$$
+
+### 3) b) Affixe de $A''$ et alignement de $O$, $A''$, $B$
+
+$A'' = R(A')$, donc on ajoute encore $\dfrac{\pi}{6}$ :
+
+$$\arg(a'') \equiv -\frac{\pi}{12}+\frac{\pi}{6} \equiv \frac{-\pi+2\pi}{12} \equiv \frac{\pi}{12}\ [2\pi]$$
+
+Une rotation **conserve les distances**, donc $|a''| = |a'| = |a| = \sqrt6$.
+
+$$a'' = \sqrt6\,e^{i\frac{\pi}{12}}$$
+
+**Alignement.** D'après 2)b), $b = (\sqrt6+\sqrt2)e^{i\frac{\pi}{12}}$. Donc
+
+$$\frac{b}{a''} = \frac{(\sqrt6+\sqrt2)\,e^{i\frac{\pi}{12}}}{\sqrt6\,e^{i\frac{\pi}{12}}}
+= \frac{\sqrt6+\sqrt2}{\sqrt6}$$
+
+C'est un **réel strictement positif**, donc les points $O$, $A''$ et $B$ sont
+alignés.
+
+> Autrement dit $a''$ et $b$ ont le même argument $\frac{\pi}{12}$ : ils sont sur
+> la même demi-droite issue de $O$.
+
+### 3) c) Affixe de $B'$
+
+$B' = R(B)$, donc $b' = e^{i\frac{\pi}{6}}\,b$ :
+
+$$b' = e^{i\frac{\pi}{6}} \times (\sqrt6+\sqrt2)e^{i\frac{\pi}{12}}
+= (\sqrt6+\sqrt2)\,e^{i\left(\frac{2\pi}{12}+\frac{\pi}{12}\right)}
+= (\sqrt6+\sqrt2)\,e^{i\frac{\pi}{4}}$$
+
+Par ailleurs $\bar{a} = \sqrt3(1+i) = \sqrt6\,e^{i\frac{\pi}{4}}$ (le conjugué a
+même module et l'argument opposé). Donc
+
+$$\frac{3+\sqrt3}{3}\,\bar a = \frac{3+\sqrt3}{3}\times\sqrt6\,e^{i\frac{\pi}{4}}
+= \left(\sqrt6+\sqrt2\right)e^{i\frac{\pi}{4}} = b'$$
+
+(en réutilisant le calcul de module de la question 2)b)).
+
+$$b' = \left(\frac{3+\sqrt3}{3}\right)\bar a$$
+
+### 3) d) Le triangle $OAB'$ est rectangle en $O$
+
+L'angle en $O$ se lit sur $\arg\!\left(\dfrac{b'}{a}\right)$. En utilisant 3)c) :
+
+$$\frac{b'}{a} = \frac{3+\sqrt3}{3}\times\frac{\bar a}{a}$$
+
+Or $a = \sqrt6\,e^{-i\frac{\pi}{4}}$ et $\bar a = \sqrt6\,e^{i\frac{\pi}{4}}$, donc
+
+$$\frac{\bar a}{a} = e^{i\left(\frac{\pi}{4}+\frac{\pi}{4}\right)} = e^{i\frac{\pi}{2}} = i$$
+
+$$\frac{b'}{a} = \frac{3+\sqrt3}{3}\,i$$
+
+Le coefficient $\frac{3+\sqrt3}{3}$ étant un réel non nul, $\dfrac{b'}{a}$ est un
+**imaginaire pur**, donc
+
+$$\left(\overrightarrow{OA},\overrightarrow{OB'}\right) \equiv \arg\!\left(\frac{b'}{a}\right) \equiv \frac{\pi}{2}\ [2\pi]$$
+
+Le triangle $OAB'$ est **rectangle en $O$**.
+
+> Le critère à citer : quotient imaginaire pur $\Longrightarrow$ angle droit au
+> sommet placé en position de soustrait.`,
   },
 
   {
@@ -284,7 +430,200 @@ Les événements $A$ et $B$ ne sont **pas indépendants**.
     position: 5,
     label: 'Problème — Étude de fonctions et calcul intégral',
     points: 8,
-    corrige: null,
+    corrige: String.raw`## Partie I
+
+$u(x)=e^{x}$ et $v(x)=x$ sur $\mathbb{R}$.
+
+### 1) Tracé
+
+$(\mathcal{C}_u)$ est la courbe de l'exponentielle : elle passe par $(0;1)$,
+croît, admet l'axe des abscisses pour asymptote en $-\infty$.
+$(\mathcal{C}_v)$ est la première bissectrice $y=x$.
+
+### 2) $e^{x}-x>0$ pour tout $x$
+
+Graphiquement, $(\mathcal{C}_u)$ est **strictement au-dessus** de
+$(\mathcal{C}_v)$ en tout point : les deux courbes ne se coupent jamais. Donc
+$e^{x}>x$, c'est-à-dire $e^{x}-x>0$ sur $\mathbb{R}$.
+
+> Ce résultat sert dans toute la Partie II : c'est lui qui garantit que le
+> logarithme est bien défini.
+
+### 3) Aire entre les deux courbes sur $[0;1]$
+
+Comme $e^{x}-x>0$, l'aire vaut
+
+$$\mathcal{A} = \int_0^1\left(e^{x}-x\right)dx
+= \left[e^{x}-\frac{x^{2}}{2}\right]_0^1
+= \left(e-\frac12\right)-\left(1-0\right)$$
+
+$$\mathcal{A} = e-\frac32 \ \text{u.a.} \approx 1{,}22\ \text{u.a.}$$
+
+## Partie II
+
+$$f(x)=x+1-\ln\left(e^{x}-x\right)$$
+
+### 1) a) $f$ est définie sur $\mathbb{R}$
+
+$f(x)$ existe si $e^{x}-x>0$, ce qui est vrai pour tout réel d'après la
+Partie I. Donc $D_f=\mathbb{R}$.
+
+### 1) b) $f(x)=1-\ln\left(1-xe^{-x}\right)$
+
+On factorise par $e^{x}$, qui est strictement positif :
+
+$$e^{x}-x = e^{x}\left(1-\frac{x}{e^{x}}\right) = e^{x}\left(1-xe^{-x}\right)$$
+
+$$\ln\left(e^{x}-x\right) = \ln\left(e^{x}\right)+\ln\left(1-xe^{-x}\right) = x+\ln\left(1-xe^{-x}\right)$$
+
+$$f(x) = x+1-x-\ln\left(1-xe^{-x}\right) = 1-\ln\left(1-xe^{-x}\right)$$
+
+### 1) c) $\displaystyle\lim_{x\to+\infty}f(x)=1$
+
+Par croissance comparée, $\displaystyle\lim_{x\to+\infty}xe^{-x}=0$, donc
+$1-xe^{-x}\to1$ et $\ln\left(1-xe^{-x}\right)\to\ln 1=0$.
+
+$$\lim_{x\to+\infty}f(x)=1-0=1$$
+
+**Interprétation.** La droite d'équation $y=1$ est **asymptote horizontale** à
+$(\mathcal{C}_f)$ au voisinage de $+\infty$.
+
+### 2) a) $\displaystyle\lim_{x\to-\infty}f(x)$
+
+Quand $x\to-\infty$ : $e^{x}\to0$ et $-x\to+\infty$, donc $e^{x}-x\to+\infty$ et
+$\ln\left(e^{x}-x\right)\to+\infty$.
+
+$$f(x)=\underbrace{x+1}_{\to-\infty}-\underbrace{\ln\left(e^{x}-x\right)}_{\to+\infty}
+\quad\Longrightarrow\quad \lim_{x\to-\infty}f(x)=-\infty$$
+
+> Pas de forme indéterminée ici : les deux termes tirent dans le même sens.
+
+### 2) b) Autre écriture pour $x<0$
+
+Pour $x<0$, $-x>0$ et l'on peut factoriser par $-x$ :
+
+$$e^{x}-x = (-x)\left(1-\frac{e^{x}}{x}\right) = (-x)\left(1-\frac{1}{xe^{-x}}\right)$$
+
+*(vérification : $(-x)\left(1-\frac{e^x}{x}\right) = -x + e^{x}$ ✓)*
+
+En passant au logarithme :
+
+$$f(x)=x+1-\ln(-x)-\ln\left(1-\frac{1}{xe^{-x}}\right)$$
+
+### 2) c) Branche parabolique
+
+$$\frac{f(x)}{x}=1+\frac1x-\frac{\ln(-x)}{x}-\frac{1}{x}\ln\left(1-\frac{1}{xe^{-x}}\right)$$
+
+Quand $x\to-\infty$ :
+
+- $\dfrac1x\to0$
+- $\dfrac{\ln(-x)}{x}\to0$ (croissance comparée : en posant $t=-x\to+\infty$, on
+  obtient $-\dfrac{\ln t}{t}\to0$)
+- $\dfrac{1}{xe^{-x}}=\dfrac{e^{x}}{x}\to0$, donc le dernier terme tend vers $0$
+
+$$\lim_{x\to-\infty}\frac{f(x)}{x}=1$$
+
+Et par ailleurs
+
+$$f(x)-x = 1-\ln\left(e^{x}-x\right) \xrightarrow[x\to-\infty]{} -\infty$$
+
+La limite du quotient est finie et non nulle, mais $f(x)-x$ ne converge pas :
+$(\mathcal{C}_f)$ admet une **branche parabolique de direction la droite
+$y=x$** au voisinage de $-\infty$.
+
+### 3) a) $f'(x)=\dfrac{1-x}{e^{x}-x}$
+
+$$f'(x) = 1-\frac{\left(e^{x}-x\right)'}{e^{x}-x} = 1-\frac{e^{x}-1}{e^{x}-x}
+= \frac{\left(e^{x}-x\right)-\left(e^{x}-1\right)}{e^{x}-x}
+= \frac{1-x}{e^{x}-x}$$
+
+### 3) b) Signe et tableau de variations
+
+Le dénominateur $e^{x}-x$ est **strictement positif** (Partie I), donc $f'(x)$ a
+le signe de $1-x$ :
+
+- $f'(x)>0$ pour $x<1$ : $f$ est croissante
+- $f'(1)=0$
+- $f'(x)<0$ pour $x>1$ : $f$ est décroissante
+
+$f$ admet donc un **maximum** en $x=1$ :
+
+$$f(1)=1+1-\ln\left(e-1\right)=2-\ln(e-1)\approx1{,}46$$
+
+| $x$ | $-\infty$ | | $1$ | | $+\infty$ |
+|---|---|---|---|---|---|
+| $f'(x)$ | | $+$ | $0$ | $-$ | |
+| $f(x)$ | $-\infty$ | $\nearrow$ | $2-\ln(e-1)$ | $\searrow$ | $1$ |
+
+### 3) c) $f(x)=0$ admet une solution unique dans $]-1;0[$
+
+$f$ est continue et **strictement croissante** sur $[-1;0]$ (inclus dans
+$]-\infty;1]$). De plus
+
+$$f(-1)=-\ln\left(e^{-1}+1\right)\approx-0{,}31<0
+\qquad
+f(0)=1-\ln(1)=1>0$$
+
+$f(-1)\times f(0)<0$ : d'après le théorème des valeurs intermédiaires appliqué à
+une fonction **continue et strictement monotone**, l'équation $f(x)=0$ admet une
+**unique** solution dans $]-1;0[$.
+
+> Cite bien les trois ingrédients — continuité, stricte monotonie, changement de
+> signe. Chacun vaut un point.
+
+### 4) a) $f(x)=x$ admet deux solutions
+
+Graphiquement, la courbe $(\mathcal{C}_f)$ et la droite $y=x$ (tracée sur la
+figure) se coupent en **deux points distincts**, l'un d'abscisse négative, l'autre
+d'abscisse comprise entre $1$ et $2$. L'équation $f(x)=x$ admet donc deux
+solutions $\alpha$ et $\beta$.
+
+### 4) b) $e^{\alpha}-e^{\beta}=\alpha-\beta$
+
+$\alpha$ vérifie $f(\alpha)=\alpha$, soit
+
+$$\alpha+1-\ln\left(e^{\alpha}-\alpha\right)=\alpha
+\;\Longrightarrow\; \ln\left(e^{\alpha}-\alpha\right)=1
+\;\Longrightarrow\; e^{\alpha}-\alpha=e$$
+
+Le même raisonnement pour $\beta$ donne $e^{\beta}-\beta=e$. Les deux quantités
+sont égales :
+
+$$e^{\alpha}-\alpha=e^{\beta}-\beta
+\;\Longrightarrow\; e^{\alpha}-e^{\beta}=\alpha-\beta$$
+
+### 5) a) $g$ admet une réciproque
+
+$g$ est la restriction de $f$ à $I=]-\infty;1]$. Sur cet intervalle, $f$ est
+**continue** et **strictement croissante** (d'après 3)b)). Elle réalise donc une
+bijection de $I$ sur $J=g(I)$.
+
+$$J = \left]\lim_{x\to-\infty}f(x)\ ;\ f(1)\right] = \left]-\infty\ ;\ 2-\ln(e-1)\right]$$
+
+$g$ admet une fonction réciproque $g^{-1}$ définie sur
+$J=\left]-\infty;\,2-\ln(e-1)\right]$.
+
+### 5) b) Dérivabilité de $g^{-1}$ en $1$ et calcul de $\left(g^{-1}\right)'(1)$
+
+**Antécédent de $1$.** On résout $g(x)=1$ :
+
+$$x+1-\ln\left(e^{x}-x\right)=1 \;\Longrightarrow\; x=\ln\left(e^{x}-x\right)
+\;\Longrightarrow\; e^{x}=e^{x}-x \;\Longrightarrow\; x=0$$
+
+Or $0\in I$ et $g(0)=1$, donc $g^{-1}(1)=0$. On note au passage que
+$1\in J$ puisque $1<2-\ln(e-1)\approx1{,}46$.
+
+**Dérivabilité.** $g$ est dérivable en $0$ et
+
+$$g'(0)=f'(0)=\frac{1-0}{e^{0}-0}=\frac{1}{1}=1\neq0$$
+
+Donc $g^{-1}$ est dérivable en $1$, et
+
+$$\left(g^{-1}\right)'(1)=\frac{1}{g'\left(g^{-1}(1)\right)}=\frac{1}{g'(0)}=\frac{1}{1}=1$$
+
+> La condition à vérifier n'est pas que $g$ soit dérivable, mais que sa dérivée
+> **ne s'annule pas** au point antécédent. C'est ce qui est attendu dans la
+> rédaction.`,
   },
 ]
 
