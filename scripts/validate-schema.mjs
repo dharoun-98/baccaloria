@@ -486,6 +486,81 @@ async function main() {
     }
   }
 
+  // ------------------------------------------------- exam self-scoring -----
+  // The student reports their own marks, so the only thing worth asserting is
+  // that a mistyped or dishonest figure cannot inflate the readiness score.
+  if (failures === 0) {
+    console.log(`\n${DIM}Smoke test — examen blanc:${RESET}`)
+    const STUDENT = '11111111-1111-1111-1111-111111111111'
+
+    const check = (ok, label, extra = '') => {
+      if (!ok) failures++
+      console.log(`  ${ok ? GREEN + '✓' : RED + '✗'}${RESET} ${label}${extra}`)
+    }
+
+    try {
+      await db.exec(`
+        select set_config('test.user_id', '${STUDENT}', false);
+
+        insert into public.exams (id, filiere_subject_id, year, session, duration_min, total_points, status)
+        values ('88888888-8888-8888-8888-888888888888',
+                (select fs.id from public.filiere_subjects fs
+                 join public.filieres f on f.id = fs.filiere_id
+                 join public.subjects s on s.id = fs.subject_id
+                 where f.code='PC' and s.slug='mathematiques'),
+                2024, 'normale', 240, 20, 'published');
+
+        insert into public.exam_exercises (id, exam_id, position, label_fr, points)
+        values
+          ('99999999-9999-9999-9999-999999999901','88888888-8888-8888-8888-888888888888',1,'Exercice 1',8),
+          ('99999999-9999-9999-9999-999999999902','88888888-8888-8888-8888-888888888888',2,'Exercice 2',12);
+      `)
+
+      // Premium is required, and this student has an active subscription from
+      // the payment test above.
+      const { rows: startRows } = await db.query(
+        `select public.start_exam_attempt('88888888-8888-8888-8888-888888888888') as p`,
+      )
+      const started = startRows[0].p
+      check(started.exercises?.length === 2, 'exercices renvoyés au démarrage')
+      check(Number(started.total_points) === 20, 'barème total = 20')
+
+      // Deliberately absurd: 99 on an 8-point exercise, and a negative.
+      const { rows: submitRows } = await db.query(
+        `select public.submit_exam_attempt($1::uuid, $2::jsonb) as p`,
+        [
+          started.attempt_id,
+          JSON.stringify([
+            { exercise_id: '99999999-9999-9999-9999-999999999901', points: 99 },
+            { exercise_id: '99999999-9999-9999-9999-999999999902', points: -5 },
+          ]),
+        ],
+      )
+      const graded = submitRows[0].p
+
+      check(
+        Number(graded.score) === 8,
+        'note plafonnée au barème de chaque exercice',
+        ` (${graded.score}/20 au lieu de 99)`,
+      )
+      check(Number(graded.max_score) === 20, 'barème inchangé')
+
+      let replayed = false
+      try {
+        await db.query(
+          `select public.submit_exam_attempt($1::uuid, '[]'::jsonb)`,
+          [started.attempt_id],
+        )
+      } catch {
+        replayed = true
+      }
+      check(replayed, 'double soumission refusée')
+    } catch (error) {
+      failures++
+      console.error(`  ${RED}✗ ${error.message}${RESET}`)
+    }
+  }
+
   await db.close()
 
   console.log()
