@@ -1,11 +1,21 @@
 'use client'
 
-import { Check, Layers, Sparkles, Tag, X } from 'lucide-react'
+import {
+  Check,
+  CircleCheck,
+  Layers,
+  Lock,
+  Sparkles,
+  Tag,
+  Undo2,
+  Unlock,
+  X,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useMemo, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 
-import { bulkAddPlacement, bulkTag } from './bulk-actions'
+import { bulkAccessTier, bulkAddPlacement, bulkPublish, bulkTag } from './bulk-actions'
 
 import type { CatalogueTag } from '@/components/admin/tag-picker'
 import { Button } from '@/components/ui/button'
@@ -90,18 +100,30 @@ export function LessonList({
     })
   }
 
-  function run(fn: () => Promise<{ error?: string; changed?: number }>, verb: string) {
+  function run(
+    fn: () => Promise<{ error?: string; changed?: number; skipped?: number }>,
+    verb: string,
+  ) {
     startTransition(async () => {
       const result = await fn()
       if (result.error) {
         toast.error(result.error)
         return
       }
-      toast.success(
-        result.changed === 0
-          ? 'Rien à faire — déjà à jour.'
-          : `${result.changed} leçon(s) ${verb}.`,
-      )
+
+      // Skipped lessons are surfaced, never swallowed: "12 published" when two
+      // silently failed is how content goes missing without anyone noticing.
+      if (result.skipped) {
+        toast.warning(
+          `${result.changed} leçon(s) ${verb}. ${result.skipped} ignorée(s) : contenu vide ou incomplet.`,
+        )
+      } else {
+        toast.success(
+          result.changed === 0
+            ? 'Rien à faire — déjà à jour.'
+            : `${result.changed} leçon(s) ${verb}.`,
+        )
+      }
       setSelected(new Set())
     })
   }
@@ -244,6 +266,44 @@ export function LessonList({
               >
                 <Layers className="size-3.5" aria-hidden />
                 Placer
+              </Button>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                loading={pending}
+                onClick={() => run(() => bulkPublish(ids, true), 'publiée(s)')}
+              >
+                <CircleCheck className="size-3.5" aria-hidden />
+                Publier
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                loading={pending}
+                onClick={() => run(() => bulkPublish(ids, false), 'retirée(s)')}
+              >
+                <Undo2 className="size-3.5" aria-hidden />
+                Dépublier
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                loading={pending}
+                onClick={() => run(() => bulkAccessTier(ids, 'free'), 'passée(s) en gratuit')}
+              >
+                <Unlock className="size-3.5" aria-hidden />
+                Gratuite
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                loading={pending}
+                onClick={() => run(() => bulkAccessTier(ids, 'premium'), 'passée(s) en premium')}
+              >
+                <Lock className="size-3.5" aria-hidden />
+                Premium
               </Button>
             </div>
 

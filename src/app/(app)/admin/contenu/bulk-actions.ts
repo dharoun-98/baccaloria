@@ -93,6 +93,136 @@ export async function bulkAddPlacement(
   return { ok: true, changed: toInsert.length }
 }
 
+/**
+ * Publishes or withdraws a selection of lessons.
+ *
+ * Publishing cascades to each lesson's questions and quiz, exactly as the
+ * single-lesson action does — a lesson live without its quiz is the bug this
+ * mirrors.
+ *
+ * Lessons that cannot legitimately go live are SKIPPED rather than failing the
+ * whole batch: selecting twelve and having one empty draft abort the lot would
+ * be worse than reporting "10 published, 2 skipped".
+ */
+export async function bulkPublish(
+  lessonIds: string[],
+  publish: boolean,
+): Promise<BulkResult & { skipped?: number }> {
+  const { supabase, staff } = await requireStaff()
+  if (!staff) return { error: 'Réservé à l’équipe.' }
+  if (lessonIds.length === 0) return { error: 'Aucune leçon sélectionnée.' }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'Session expirée.' }
+
+  const now = new Date().toISOString()
+  let changed = 0
+  let skipped = 0
+
+  if (!publish) {
+    const { error } = await supabase
+      .from('lessons')
+      .update({ status: 'draft' })
+      .in('id', lessonIds)
+
+    if (error) return { error: 'Retrait impossible.' }
+
+    await supabase
+      .from('assessments')
+      .update({ status: 'draft' })
+      .in('lesson_id', lessonIds)
+      .eq('kind', 'lesson_quiz')
+
+    revalidatePath('/admin/contenu')
+    revalidatePath('/matieres', 'layout')
+    return { ok: true, changed: lessonIds.length }
+  }
+
+  // Same guard as the single-lesson path: no content, or a block left empty,
+  // means the lesson is not ready to be read by a student.
+  const { data: blocks } = await supabase
+    .from('lesson_blocks')
+    .select('lesson_id, content')
+    .in('lesson_id', lessonIds)
+
+  const byLesson = new Map<string, { total: number; empty: number }>()
+  for (const b of blocks ?? []) {
+    const entry = byLesson.get(b.lesson_id) ?? { total: 0, empty: 0 }
+    entry.total++
+    if (!(b.content as { markdown?: string } | null)?.markdown?.trim()) entry.empty++
+    byLesson.set(b.lesson_id, entry)
+  }
+
+  const ready = lessonIds.filter((id) => {
+    const entry = byLesson.get(id)
+    return entry && entry.total > 0 && entry.empty === 0
+  })
+  skipped = lessonIds.length - ready.length
+
+  if (ready.length > 0) {
+    const { error } = await supabase
+      .from('lessons')
+      .update({
+        status: 'published',
+        reviewed_by: user.id,
+        reviewed_at: now,
+        published_at: now,
+      })
+      .in('id', ready)
+
+    if (error) return { error: 'Publication impossible.' }
+
+    await supabase
+      .from('questions')
+      .update({ status: 'published', reviewed_by: user.id, reviewed_at: now })
+      .in('lesson_id', ready)
+      .not('explanation', 'is', null)
+
+    await supabase
+      .from('assessments')
+      .update({ status: 'published' })
+      .in('lesson_id', ready)
+      .eq('kind', 'lesson_quiz')
+
+    changed = ready.length
+  }
+
+  revalidatePath('/admin/contenu')
+  revalidatePath('/matieres', 'layout')
+  return { ok: true, changed, skipped }
+}
+
+/** Switches a selection between the free tier and premium. */
+export async function bulkAccessTier(
+  lessonIds: string[],
+  tier: 'free' | 'premium',
+): Promise<BulkResult> {
+  const { supabase, staff } = await requireStaff()
+  if (!staff) return { error: 'Réservé à l’équipe.' }
+  if (lessonIds.length === 0) return { error: 'Aucune leçon sélectionnée.' }
+
+  const { error } = await supabase
+    .from('lessons')
+    .update({ access_tier: tier })
+    .in('id', lessonIds)
+
+  if (error) return { error: 'Modification impossible.' }
+
+  // The lesson's quiz follows its lesson: a free lesson whose quiz is locked
+  // is a worse experience than either option chosen deliberately.
+  await supabase
+    .from('assessments')
+    .update({ access_tier: tier })
+    .in('lesson_id', lessonIds)
+    .eq('kind', 'lesson_quiz')
+
+  revalidatePath('/admin/contenu')
+  revalidatePath('/matieres', 'layout')
+  return { ok: true, changed: lessonIds.length }
+}
+
 /** Adds or removes one tag across a selection. */
 export async function bulkTag(
   lessonIds: string[],

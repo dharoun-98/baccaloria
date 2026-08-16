@@ -117,17 +117,36 @@ export async function publishLesson(lessonId: string): Promise<Result> {
     }
   }
 
+  const now = new Date().toISOString()
+
   const { error } = await supabase
     .from('lessons')
     .update({
       status: 'published',
       reviewed_by: user.id,
-      reviewed_at: new Date().toISOString(),
-      published_at: new Date().toISOString(),
+      reviewed_at: now,
+      published_at: now,
     })
     .eq('id', lessonId)
 
   if (error) return { error: 'Publication impossible.' }
+
+  // Publishing the lesson must publish its quiz too. Otherwise the lesson goes
+  // live with no "Teste-toi" button and nobody notices, because a missing
+  // button looks like a design choice rather than a fault. Reviewing a lesson
+  // means reviewing its questions, so the same reviewer is stamped on both —
+  // which is also what the database's publish constraint requires.
+  await supabase
+    .from('questions')
+    .update({ status: 'published', reviewed_by: user.id, reviewed_at: now })
+    .eq('lesson_id', lessonId)
+    .not('explanation', 'is', null)
+
+  await supabase
+    .from('assessments')
+    .update({ status: 'published' })
+    .eq('lesson_id', lessonId)
+    .eq('kind', 'lesson_quiz')
 
   revalidatePath('/admin/contenu')
   revalidatePath(`/admin/contenu/${lessonId}`)
@@ -145,6 +164,14 @@ export async function unpublishLesson(lessonId: string): Promise<Result> {
     .eq('id', lessonId)
 
   if (error) return { error: 'Retrait impossible.' }
+
+  // Withdraw the quiz with it: a quiz still live on a hidden lesson is
+  // reachable by anyone holding the URL.
+  await supabase
+    .from('assessments')
+    .update({ status: 'draft' })
+    .eq('lesson_id', lessonId)
+    .eq('kind', 'lesson_quiz')
 
   revalidatePath('/admin/contenu')
   revalidatePath(`/admin/contenu/${lessonId}`)
